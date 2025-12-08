@@ -4,7 +4,8 @@ const prisma = new PrismaClient();
 async function main() {
   const dept = await prisma.department.upsert({
     where: { name: "Engineering" },
-    create: { name: "Engineering" }
+    create: { name: "Engineering" },
+    update: {}
   });
 
   const admin = await prisma.user.upsert({
