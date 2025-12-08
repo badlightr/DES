@@ -7,12 +7,16 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
     "db:migrate": "npx prisma migrate dev",
     "db:deploy": "npx prisma migrate deploy",
     "db:seed": "npx ts-node --transpile-only prisma/seed.ts",
     "db:studio": "npx prisma studio",
     "db:push": "npx prisma db push",
-    "prisma:generate": "npx prisma generate"
+    "prisma:generate": "npx prisma generate",
+    "worker": "npx ts-node --transpile-only src/worker/index.ts"
   },
   "dependencies": {
     "@prisma/client": "^7.1.0",
@@ -27,12 +31,15 @@
   },
   "devDependencies": {
     "@types/bcrypt": "^6.0.0",
+    "@types/jest": "^29.5.0",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.0.7",
+    "jest": "^29.5.0",
+    "ts-jest": "^29.1.0",
     "typescript": "^5"
   }
 }

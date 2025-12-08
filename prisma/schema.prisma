@@ -11,6 +11,7 @@ model User {
   employee_no   String    @unique
   name          String
   email         String?   @unique
+  password_hash String
   timezone      String    @default("UTC")
   role          UserRole  @default(EMPLOYEE)
   departmentId  String?   @db.Uuid
@@ -21,6 +22,7 @@ model User {
 
   attendance    AttendanceLog[]
   overtimeRequests OvertimeRequest[] @relation("user_requests")
+  tokenRevocations TokenRevocation[]
 }
 
 model Department {
@@ -157,4 +159,16 @@ enum ApprovalStatus {
   APPROVED
   REJECTED
   SKIPPED
+}
+
+model TokenRevocation {
+  id        String   @id @default(uuid())
+  userId    String   @db.Uuid
+  token_jti String   @unique
+  revoked_at DateTime @default(now())
+  expires_at DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, expires_at])
 }
