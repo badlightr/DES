@@ -1,0 +1,160 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id            String    @id @default(uuid())
+  employee_no   String    @unique
+  name          String
+  email         String?   @unique
+  timezone      String    @default("UTC")
+  role          UserRole  @default(EMPLOYEE)
+  departmentId  String?   @db.Uuid
+  is_active     Boolean   @default(true)
+  created_at    DateTime  @default(now())
+  updated_at    DateTime?
+  deleted_at    DateTime?
+
+  attendance    AttendanceLog[]
+  overtimeRequests OvertimeRequest[] @relation("user_requests")
+}
+
+model Department {
+  id    String @id @default(uuid())
+  name  String @unique
+  created_at DateTime @default(now())
+}
+
+model AttendanceLog {
+  id        String   @id @default(uuid())
+  userId    String   @db.Uuid
+  check_in  DateTime
+  check_out DateTime?
+  source    String
+  verified  Boolean  @default(false)
+  metadata  Json?
+  created_at DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model OvertimeRequest {
+  id            String    @id @default(uuid())
+  userId        String    @db.Uuid
+  departmentId  String?   @db.Uuid
+  start_at      DateTime
+  end_at        DateTime
+  duration_min  Int
+  reason        String?
+  status        RequestStatus @default(DRAFT)
+  submitted_at  DateTime?
+  expires_at    DateTime?
+  max_level     Int     @default(3)
+  current_level Int     @default(0)
+  is_active     Boolean @default(true)
+  row_version   Int     @default(1)
+  created_by    String?  @db.Uuid
+  created_at    DateTime @default(now())
+  updated_at    DateTime?
+  deleted_at    DateTime?
+
+  user   User @relation("user_requests", fields: [userId], references: [id], onDelete: Cascade)
+  approvals ApprovalStep[]
+  auditEntries AuditEntry[] @relation("overtime_audits")
+}
+
+model ApprovalChain {
+  id String @id @default(uuid())
+  departmentId String? @db.Uuid
+  name String
+  created_at DateTime @default(now())
+  steps ApprovalChainStep[]
+}
+
+model ApprovalChainStep {
+  id String @id @default(uuid())
+  chainId String @db.Uuid
+  step_order Int
+  role UserRole?
+  userId String?
+  auto_escalate_after_min Int?
+  allow_delegate Boolean @default(false)
+
+  chain ApprovalChain @relation(fields:[chainId], references:[id], onDelete: Cascade)
+}
+
+model ApprovalStep {
+  id String @id @default(uuid())
+  overtimeRequestId String @db.Uuid
+  step_order Int
+  approver_id String? @db.Uuid
+  status ApprovalStatus @default(PENDING)
+  decision_at DateTime?
+  comment String?
+  row_version Int @default(1)
+  created_at DateTime @default(now())
+
+  overtime OvertimeRequest @relation(fields: [overtimeRequestId], references: [id], onDelete: Cascade)
+}
+
+model AuditEntry {
+  id String @id @default(uuid())
+  entity_table String
+  entity_id String? @db.Uuid
+  action String
+  performed_by String? @db.Uuid
+  performed_at DateTime @default(now())
+  diff Json?
+  sha256 String
+  previous_sha256 String?
+  
+  overtime OvertimeRequest? @relation("overtime_audits", fields: [entity_id], references: [id], onDelete: SetNull)
+}
+
+model IdempotencyKey {
+  key String @id
+  owner_id String @db.Uuid
+  method String
+  path String
+  request_hash String?
+  response_body Json?
+  created_at DateTime @default(now())
+  used_at DateTime?
+}
+
+model PolicyConfig {
+  id String @id @default(uuid())
+  key String @unique
+  value Json
+  effective_from DateTime @default(now())
+  created_at DateTime @default(now())
+}
+
+enum UserRole {
+  EMPLOYEE
+  SUPERVISOR
+  MANAGER
+  HR
+  ADMIN
+}
+
+enum RequestStatus {
+  DRAFT
+  SUBMITTED
+  PENDING
+  APPROVED
+  REJECTED
+  EXPIRED
+  CANCELED
+}
+
+enum ApprovalStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  SKIPPED
+}
