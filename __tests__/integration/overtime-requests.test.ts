@@ -10,7 +10,7 @@
 
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcrypt";
-import { signAccessToken } from "../src/lib/jwt";
+import { signAccessToken } from "@/lib/jwt";
 import crypto from "crypto";
 
 // Mock test database (would be a test-specific Postgres instance)
@@ -461,7 +461,7 @@ describe("Overtime Management System - Integration Tests", () => {
 
       expect(key2).toBeDefined();
       expect(key2?.response_body).toEqual(responseData);
-      expect(key1.id).toBe(key2?.id);
+      expect(key1.key).toBe(key2?.key);
     });
   });
 });
