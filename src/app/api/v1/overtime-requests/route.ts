@@ -9,8 +9,7 @@ export async function POST(req: Request) {
   const token = auth.startsWith("Bearer ") ? auth.slice(7) : null;
   const userPayload = token ? verifyAccessToken(token) : null;
   if (!userPayload) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  // @ts-ignore
-  const userId = userPayload.sub as string;
+  const userId = (userPayload as any).sub as string;
 
   const idempotencyKey = req.headers.get("x-idempotency-key");
   if (!idempotencyKey) return NextResponse.json({ error: "Missing Idempotency Key" }, { status: 400 });
@@ -25,7 +24,7 @@ export async function POST(req: Request) {
 
     const durationMin = Math.floor((end.getTime() - start.getTime()) / 60000);
 
-    return await prisma.$transaction(async (tx) => {
+    return await prisma.$transaction(async (tx: any) => {
       // overlap check (transactional)
       const overlaps = await tx.$queryRawUnsafe(`
         SELECT id FROM "OvertimeRequest"
