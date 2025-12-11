@@ -3,10 +3,10 @@
 import React from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { useRouter } from 'next/navigation';
-import EmployeeDashboard from '@/components/EmployeeDashboard';
+import CreateOvertimeForm from '@/components/CreateOvertimeForm';
 
-export default function DashboardPage() {
-  const { isAuthenticated, loading, user } = useAuth();
+export default function CreateOvertimePage() {
+  const { isAuthenticated, loading } = useAuth();
   const router = useRouter();
 
   React.useEffect(() => {
@@ -23,9 +23,9 @@ export default function DashboardPage() {
     );
   }
 
-  if (!isAuthenticated || user?.role === 'ADMIN') {
+  if (!isAuthenticated) {
     return null;
   }
 
-  return <EmployeeDashboard />;
+  return <CreateOvertimeForm />;
 }
