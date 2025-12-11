@@ -77,3 +77,49 @@ export function validatePagination(page?: any, pageSize?: any) {
 
   return { page: p, pageSize: ps };
 }
+
+// Business rule constants
+export const OVERTIME_RULES = {
+  MAX_HOURS_PER_DAY: 4, // 4 hours max per day
+  MAX_HOURS_PER_WEEK: 12, // 12 hours max per week
+  MIN_HOURS_PER_REQUEST: 0.5, // 30 minutes minimum
+};
+
+// Client-side helper functions
+export function calculateDurationMinutes(startTime: string, endTime: string): number {
+  const [startH, startM] = startTime.split(':').map(Number);
+  const [endH, endM] = endTime.split(':').map(Number);
+  const startMinutes = startH * 60 + startM;
+  const endMinutes = endH * 60 + endM;
+  return endMinutes - startMinutes;
+}
+
+export function calculateDurationHours(startTime: string, endTime: string): number {
+  return calculateDurationMinutes(startTime, endTime) / 60;
+}
+
+export function calculatePayment(durationMinutes: number, hourlyRate: number): number {
+  const hours = durationMinutes / 60;
+  // Apply typical overtime multiplier (1.5x)
+  return Math.round(hours * hourlyRate * 1.5);
+}
+
+export function getWeekNumber(date: Date): number {
+  const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+  const dayNum = d.getUTCDay() || 7;
+  d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+  const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+  return Math.ceil((((d.getTime() - yearStart.getTime()) / 86400000) + 1) / 7);
+}
+
+export function getMonthKey(date: Date): string {
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+}
+
+export function formatMonthYear(date: Date): string {
+  return date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+}
+
+export function formatDate(date: Date): string {
+  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+}
